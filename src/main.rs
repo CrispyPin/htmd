@@ -1,7 +1,7 @@
 use std::{
 	error::Error,
 	ffi::OsStr,
-	fs::{read_dir, read_to_string, File},
+	fs::{read_dir, read_to_string, DirBuilder, File},
 	io::Write,
 	path::{Path, PathBuf},
 };
@@ -10,15 +10,31 @@ const SRC_DIR: &str = "write";
 const OUT_DIR: &str = "site";
 const CONTENT_MARKER: &str = "CONTENT HERE";
 
+const TEMPLATE_FILE: &str = "template.html";
+const DEFAULT_TEMPLATE: &[u8] = include_bytes!("../template.html");
+
 type Result = core::result::Result<(), Box<dyn Error>>;
 
 fn main() -> Result {
+	if !PathBuf::from(TEMPLATE_FILE).is_file() {
+		File::create(TEMPLATE_FILE)?.write_all(DEFAULT_TEMPLATE)?;
+		println!("created {TEMPLATE_FILE}");
+	}
+	if !PathBuf::from(SRC_DIR).is_dir() {
+		DirBuilder::new().create(SRC_DIR)?;
+		println!("created {SRC_DIR}/");
+	}
+	if !PathBuf::from(OUT_DIR).is_dir() {
+		DirBuilder::new().create(OUT_DIR)?;
+		println!("created {OUT_DIR}/");
+	}
+
 	let src_dir = PathBuf::from(SRC_DIR);
 	build_dir(&src_dir)
 }
 
 fn build_dir(dir: &Path) -> Result {
-	for entry in read_dir(dir).unwrap().flatten() {
+	for entry in read_dir(dir)?.flatten() {
 		let ftype = entry.file_type()?;
 		if ftype.is_dir() {
 			build_dir(&entry.path())?;
@@ -99,7 +115,7 @@ fn convert_file(path: &Path) -> Result {
 		}
 	}
 
-	let template = read_to_string("template.html")?;
+	let template = read_to_string(TEMPLATE_FILE)?;
 	let html = template.replacen(CONTENT_MARKER, &html, 1);
 
 	let mut file = File::create(&out_path)?;
