@@ -53,7 +53,9 @@ fn build_file(path: &Path) -> Result {
 	if path.extension().and_then(OsStr::to_str) == Some("md") {
 		convert_file(path)
 	} else {
-		todo!("move file")
+		println!("file ignored: {}", path.display());
+		// TODO copy non dotfiles
+		Ok(())
 	}
 }
 
