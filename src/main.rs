@@ -118,6 +118,9 @@ fn convert_file(path: &Path) -> Result {
 	let template = read_to_string(TEMPLATE_FILE)?;
 	let html = template.replacen(CONTENT_MARKER, &html, 1);
 
+	DirBuilder::new()
+		.recursive(true)
+		.create(out_path.parent().unwrap())?;
 	let mut file = File::create(&out_path)?;
 	file.write_all(html.as_bytes())?;
 	println!("built {}", out_path.display());
