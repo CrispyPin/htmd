@@ -40,8 +40,6 @@ enum S {
 	None,
 	P,
 	Code,
-	UList,
-	OList,
 }
 
 fn convert_file(path: &Path) -> Result {
@@ -123,33 +121,64 @@ fn convert_line(source: &str) -> String {
 		}
 	};
 
+	let mut link: Option<(String, Option<String>)> = None;
+
 	let mut chars = source.chars().peekable();
 	while let Some(c) = chars.next() {
-		if c == '*' {
+		if let Some(link_c) = &mut link {
+			match link_c {
+				(link_text, None) => {
+					if c == ']' {
+						if chars.peek() == Some(&'(') {
+							_ = chars.next();
+							link_c.1 = Some(String::new());
+						} else {
+							out += &format!("[{link_text}]");
+							link = None;
+						}
+					} else {
+						link_text.push(c);
+					}
+				}
+				(link_text, Some(href)) => {
+					if c == ')' {
+						out += &format!("<a href=\"{href}\">{link_text}</a>");
+						link = None;
+					} else {
+						href.push(c);
+					}
+				}
+			}
+			continue;
+		}
+		if c == '[' {
+			link = Some((String::new(), None));
+		} else if c == '*' {
 			if chars.peek() == Some(&'*') {
 				_ = chars.next();
 				is_b = !is_b;
-				//				out += b_tag();
 				out += &toggle(is_b, "strong");
 			} else {
 				is_em = !is_em;
 				out += &toggle(is_em, "em");
-				//				out += if is_em { "<em>" } else { "</em>" };
 			}
 		} else if c == '`' {
 			is_code = !is_code;
 			out += &toggle(is_code, "code");
-
-		//			out += if is_code { "<code>" } else { "</code>" };
 		} else if c == '_' {
 			is_ul = !is_ul;
 			out += &toggle(is_ul, "u");
-
-		//			out += if is_ul { "<u>" } else { "</u>" };
 		} else {
 			out.push(c);
 		}
 	}
+	if let Some((link_text, href)) = link {
+		out += &format!("[{link_text}");
+		if let Some(href) = href {
+			out += &format!("]({href}");
+		}
+	}
+
 	if is_em {
 		out += &toggle(false, "em");
 	}
