@@ -11,7 +11,8 @@ use convert::convert_document;
 
 const SRC_DIR: &str = "write";
 const OUT_DIR: &str = "site";
-const CONTENT_MARKER: &str = "CONTENT HERE";
+const CONTENT_MARKER: &str = "{CONTENT}";
+const FILENAME_MARKER: &str = "{FILENAME}";
 
 const TEMPLATE_FILE: &str = "template.html";
 const DEFAULT_TEMPLATE: &[u8] = include_bytes!("../template.html");
@@ -61,10 +62,12 @@ fn convert_file(path: &Path) -> Result {
 	let out_path = out_path.with_extension("html");
 
 	let markdown = read_to_string(path)?;
-	let html = convert_document(&markdown);
-
+	let content = convert_document(&markdown);
 	let template = read_to_string(TEMPLATE_FILE)?;
-	let html = template.replacen(CONTENT_MARKER, &html, 1);
+	let filename = path.file_stem().unwrap().to_string_lossy().to_string();
+	let html = template
+		.replacen(CONTENT_MARKER, &content, 1)
+		.replace(FILENAME_MARKER, &filename);
 
 	DirBuilder::new()
 		.recursive(true)

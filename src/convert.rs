@@ -14,13 +14,13 @@ pub fn convert_document(markdown: &str) -> String {
 			if state == S::Code {
 				html += "</pre>\n";
 				state = S::None;
-				continue;
+			} else {
+				if state == S::P {
+					html += "</p>\n";
+				}
+				state = S::Code;
+				html += "<pre>\n";
 			}
-			if state == S::P {
-				html += "</p>\n";
-			}
-			state = S::Code;
-			html += "<pre>\n";
 			continue;
 		}
 
