@@ -8,6 +8,8 @@ use std::{
 
 const SRC_DIR: &str = "write";
 const OUT_DIR: &str = "site";
+const CONTENT_MARKER: &str = "CONTENT HERE";
+
 type Result = core::result::Result<(), Box<dyn Error>>;
 
 fn main() -> Result {
@@ -56,14 +58,13 @@ fn convert_file(path: &Path) -> Result {
 				html += "</pre>\n";
 				state = S::None;
 				continue;
-			} else {
-				if state == S::P {
-					html += "</p>\n";
-				}
-				state = S::Code;
-				html += "<pre>\n";
-				continue;
 			}
+			if state == S::P {
+				html += "</p>\n";
+			}
+			state = S::Code;
+			html += "<pre>\n";
+			continue;
 		}
 
 		if state == S::Code {
@@ -99,11 +100,11 @@ fn convert_file(path: &Path) -> Result {
 	}
 
 	let template = read_to_string("template.html")?;
-	let html = template.replace("CONTENT HERE", &html);
+	let html = template.replacen(CONTENT_MARKER, &html, 1);
 
-	let mut file = File::create(out_path)?;
+	let mut file = File::create(&out_path)?;
 	file.write_all(html.as_bytes())?;
-
+	println!("built {}", out_path.display());
 	Ok(())
 }
 
