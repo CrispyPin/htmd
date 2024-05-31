@@ -37,8 +37,17 @@ pub fn convert_document(markdown: &str) -> String {
 					state = S::None;
 					html += "</p>\n";
 				}
+				let id: String = header
+					.to_lowercase()
+					.chars()
+					.filter_map(|c| match c {
+						' ' => Some('-'),
+						'-' | '_' => Some(c),
+						_ => c.is_alphanumeric().then_some(c),
+					})
+					.collect();
 				let header = &convert_line(header);
-				html += &format!("<h{level}>{header}</h{level}>\n");
+				html += &format!("<h{level} id=\"{id}\">{header}</h{level}>\n");
 				continue;
 			}
 		}
