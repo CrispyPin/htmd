@@ -60,8 +60,13 @@ pub fn convert_document(markdown: &str) -> String {
 				state = S::P;
 				html += "<p>\n";
 			}
-			html += &convert_line(line);
-			html += "<br>\n";
+			if line.starts_with('<') {
+				html += line;
+				html += "\n";
+			} else {
+				html += &convert_line(line);
+				html += "<br>\n";
+			}
 		}
 	}
 	html
@@ -73,7 +78,6 @@ fn convert_line(source: &str) -> String {
 	let mut is_b = false;
 	let mut is_code = false;
 	let mut is_ul = false;
-	let mut is_html_tag = false;
 	let toggle = |state: bool, tag: &str| {
 		if state {
 			format!("<{tag}>")
@@ -86,13 +90,6 @@ fn convert_line(source: &str) -> String {
 
 	let mut chars = source.chars().peekable();
 	while let Some(c) = chars.next() {
-		if is_html_tag {
-			out.push(c);
-			if c == '>' {
-				is_html_tag = false;
-			}
-			continue;
-		}
 		if let Some(link_c) = &mut link {
 			match link_c {
 				(link_text, None) => {
@@ -136,9 +133,6 @@ fn convert_line(source: &str) -> String {
 		} else if c == '_' {
 			is_ul = !is_ul;
 			out += &toggle(is_ul, "u");
-		} else if c == '<' {
-			out.push(c);
-			is_html_tag = true;
 		} else {
 			out.push(c);
 		}
