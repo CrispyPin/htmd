@@ -3,6 +3,7 @@ enum S {
 	None,
 	P,
 	Code,
+	Html,
 }
 
 pub fn convert_document(markdown: &str) -> String {
@@ -20,6 +21,18 @@ pub fn convert_document(markdown: &str) -> String {
 				}
 				state = S::Code;
 				html += "<pre>\n";
+			}
+			continue;
+		}
+
+		if line.starts_with("{RAW_HTML}") {
+			if state == S::Html {
+				state = S::None;
+			} else {
+				if state == S::P {
+					html += "</p>\n";
+				}
+				state = S::Html;
 			}
 			continue;
 		}
