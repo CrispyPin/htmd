@@ -77,7 +77,6 @@ fn convert_line(source: &str) -> String {
 	let mut is_em = false;
 	let mut is_b = false;
 	let mut is_code = false;
-	let mut is_ul = false;
 	let toggle = |state: bool, tag: &str| {
 		if state {
 			format!("<{tag}>")
@@ -130,9 +129,6 @@ fn convert_line(source: &str) -> String {
 		} else if c == '`' {
 			is_code = !is_code;
 			out += &toggle(is_code, "code");
-		} else if c == '_' {
-			is_ul = !is_ul;
-			out += &toggle(is_ul, "u");
 		} else {
 			out.push(c);
 		}
@@ -152,9 +148,6 @@ fn convert_line(source: &str) -> String {
 	}
 	if is_code {
 		out += "</code>";
-	}
-	if is_ul {
-		out += "</u>";
 	}
 	out
 }
