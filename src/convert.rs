@@ -43,6 +43,26 @@ pub fn convert_document(markdown: &str) -> String {
 			continue;
 		}
 
+		if let Some(img_info) = line.strip_prefix("==image:") {
+			let (src, alt) = img_info.split_once(':').unwrap();
+			html += &format!("<img src={src} alt={alt} title={alt}></img>\n");
+			continue;
+		}
+
+		if let Some(video_info) = line.strip_prefix("==video:") {
+			let mut attributes = video_info.split(':');
+			let src = attributes.next().unwrap();
+			let alt = attributes.next().unwrap_or_else(|| &"\"\"");
+			let extra = attributes.next().unwrap_or_default();
+			html += &format!("<video src={src} alt={alt} title={alt} controls {extra}></video>\n");
+			continue;
+		}
+
+		if let Some(youtube_id) = line.strip_prefix("==youtube:") {
+			html += &format!("<a href=\"https://youtu.be/{youtube_id}\">https://youtu.be/{youtube_id}</a><iframe src=\"https://www.youtube-nocookie.com/embed/{youtube_id}\" width=\"600px\" height=\"340px\" allowfullscreen></iframe>");
+			continue;
+		}
+
 		if let Some((start, header)) = line.split_once(' ') {
 			let level = start.len();
 			if (1..=6).contains(&level) && start.chars().all(|c| c == '#') {
