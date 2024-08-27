@@ -45,7 +45,7 @@ pub fn convert_document(markdown: &str) -> String {
 
 		if let Some(img_info) = line.strip_prefix("==image:") {
 			let (src, alt) = img_info.split_once(':').unwrap();
-			html += &format!("<img src={src} alt={alt} title={alt}></img>\n");
+			html += &format!("<img loading=\"lazy\" src={src} alt={alt} title={alt}></img>\n");
 			continue;
 		}
 
@@ -54,12 +54,12 @@ pub fn convert_document(markdown: &str) -> String {
 			let src = attributes.next().unwrap();
 			let alt = attributes.next().unwrap_or_else(|| &"\"\"");
 			let extra = attributes.next().unwrap_or_default();
-			html += &format!("<video src={src} alt={alt} title={alt} controls {extra}></video>\n");
+			html += &format!("<video loading=\"lazy\" src={src} alt={alt} title={alt} controls {extra}></video>\n");
 			continue;
 		}
 
 		if let Some(youtube_id) = line.strip_prefix("==youtube:") {
-			html += &format!("<a href=\"https://youtu.be/{youtube_id}\">https://youtu.be/{youtube_id}</a><iframe src=\"https://www.youtube-nocookie.com/embed/{youtube_id}\" width=\"600px\" height=\"340px\" allowfullscreen></iframe>");
+			html += &format!("<a href=\"https://youtu.be/{youtube_id}\">https://youtu.be/{youtube_id}</a>\n<iframe loading=\"lazy\" src=\"https://www.youtube-nocookie.com/embed/{youtube_id}\" width=\"600px\" height=\"340px\" allowfullscreen></iframe>");
 			continue;
 		}
 
