@@ -44,7 +44,9 @@ pub fn convert_document(markdown: &str) -> String {
 		}
 
 		if let Some(img_info) = line.strip_prefix("==image:") {
-			let (src, alt) = img_info.split_once(':').unwrap();
+			let mut attributes = img_info.split(':');
+			let src = attributes.next().unwrap();
+			let alt = attributes.next().unwrap_or_else(|| &"\"\"");
 			html += &format!("<img loading=\"lazy\" src={src} alt={alt} title={alt}></img>\n");
 			continue;
 		}
